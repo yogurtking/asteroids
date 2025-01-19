@@ -2,6 +2,16 @@ import pygame
 from constants import *
 from circleshape import *
 from player import *
+from asteroid import *
+from asteroidfield import *
+
+updatable = pygame.sprite.Group()
+drawable = pygame.sprite.Group()
+asteroids = pygame.sprite.Group()
+
+Player.containers = (updatable, drawable)
+Asteroid.containers = (asteroids, updatable, drawable)
+AsteroidField.containers = (updatable,)
 
 def main():
     pygame.init()
@@ -10,13 +20,21 @@ def main():
     print("Starting asteroids!")
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     ship = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+    AsteroidField()
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
-        ship.update(dt)
+        
+        for obj in updatable: #likewise for updateables
+            obj.update(dt)
+        for asteroid in asteroids:
+            if asteroid.collision(ship):
+                return print("Game over!")
         screen.fill(BLACK)
-        ship.draw(screen)
+        
+        for obj in drawable: #draw everything in drawables group
+            obj.draw(screen)
         print(f"Delta time: {round(dt, 3)} seconds")
         pygame.display.flip()
         delta = fps_limiter.tick(60)
